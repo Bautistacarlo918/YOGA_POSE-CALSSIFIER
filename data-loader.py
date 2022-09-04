@@ -1,25 +1,27 @@
-# from importlib.resources import path
-# from itertools import count
-# from msilib.schema import Directory
-from operator import eq
+#from traceback import print_list
 import numpy as np
-import pandas as pd
-# import matplotlib.pyplot as plt
-# import sklearn
-# import pathlib
-# import PIL
+#import pandas as pd
 from zipfile import ZipFile
 import socket
 import os
 import random
-
+import shutil
+import math
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
 # Main function
+
 def main():
     unzip()
     equal_dataset()
-    split_set()
+    make_dir()
+    split_files() 
 
-
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#Unziping files
 
 def unzip():
     #download the datasets <https://www.kaggle.com/datasets/ujjwalchowdhury/yoga-pose-classification>
@@ -28,13 +30,14 @@ def unzip():
         with ZipFile('archive.zip', 'r') as zipObj:
     ### Extract all the contents of zip file in different directory
             zipObj.extractall()
-            print('File is unzipped in current directory')
+            print('File is unzipped in current directory\n\n')
     else:
-        print('File is unzipped in current directory')
+        print('File is unzipped in current directory\n\n')
 
-
-
-
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#Making the data set equal
 
 def equal_dataset():
 ### Making equal data set 
@@ -77,22 +80,20 @@ def equal_dataset():
             
 
         else:
-            #print (f"The files in {folder} is {data}\n\n\n")
+            print (f"The files in {folder} is {data}\n\n")
             pass
     
     rename_data(main_folder)
     
 
-    
-
-    
 
 
-
-
-
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#Renaming the data set in their persfective class
 def rename_data(main_folder):
-    ####Renaming datas
+    
      
     try:
         #Renaming the photos in their specific classification with count
@@ -109,12 +110,13 @@ def rename_data(main_folder):
                 os.rename(src,dst)
 
     except FileExistsError:
-        print("The files are already rename")
+        print("The files are already rename\n\n")
 
-
-
-
-def split_set():
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#Making directory for train and test
+def make_dir():
     try:
         #Making dataset dir
 
@@ -124,16 +126,127 @@ def split_set():
         data_folder = os.path.join(parent_directory,directory)
         os.mkdir(data_folder)
 
-        training_folder = "train"
-        testing_folder = "test"
-        
+        training_folder = "train_files"
+        testing_folder = "test_files"
+            
         #Making train and test folder in dataset dir
+
         train_folder = os.path.join(directory , training_folder)
         test_folder = os.path.join(directory , testing_folder )
         os.mkdir(train_folder)
         os.mkdir(test_folder)
+
+        #Making Classification folders in train and test dir
+
+        train_dir =(f"{directory}\{training_folder}")
+        test_dir = (f"{directory}\{testing_folder}")
+
+
+        main_folder = "YogaPoses"
+        class_list = os.listdir(main_folder)
+        for i in class_list:
+            os.makedirs(os.path.join(train_dir,i))
+            os.makedirs(os.path.join(test_dir,i))
+
+
+
+
+
     except:
         print ("All directory are made")
+
+
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#spliting data set train and test
+def split_files():
+    
+    
+    #dst dir
+    training_folder = "Datasets//train_files"
+    testing_folder = "Datasets//test_files"
+
+    train_values = math.floor((len(os.listdir("YogaPoses//Downdog"))*len(os.listdir("YogaPoses"))*0.8)/5)
+    
+                
+
+    def split_data (train_values,training_folder,testing_folder):
+
+        main_folder = "YogaPoses"
+ 
+        for i in os.listdir(main_folder):
+            copy_dir = f"{main_folder}//{i}"
+            list_data = os.listdir(copy_dir)
+            dest_dir = f"{training_folder}//{i}//{i}"
+            dest_dir_test = f"{testing_folder}//{i}//{i}"
+            np.random.shuffle(list_data)
+            #print (list_data)
+            #print (copy_dir)
+            #print (f"{copy_dir},,,,,,{dest_dir}")
+        
+            
+            for k in range (train_values):
+                copy_img = list_data.pop(0)
+                #print (f"{copy_dir}//{copy_img},,,,,,{dest_dir}.jpg")
+                src = f"{copy_dir}//{copy_img}"
+                #print (src)
+                dst = f"{dest_dir}_{k}.jpg"
+                #print (dst)
+                shutil.copyfile(src , dst)
+                
+                
+            for j in range (len(list_data)):
+                copy_img = list_data.pop(0)
+                #print (copy_img)
+                src = f"{copy_dir}//{copy_img}" 
+                #print (src)
+                dst = f"{dest_dir_test}_{j}.jpg"
+                #print (dst)
+                shutil.copyfile(src , dst)
+            
+           
+
+
+
+                
+
+    check_dir_train = os.listdir(training_folder)
+    for i in check_dir_train:
+        ins_file_dir = f"{training_folder}//{i}"
+        #print(len(os.listdir(ins_file_dir)))
+        if (len(os.listdir(ins_file_dir))) < train_values :
+            split_data(train_values,training_folder,testing_folder)
+            print ("it run the function")
+        else :
+            print (f"{ins_file_dir} has {(len(os.listdir(ins_file_dir)))}/{train_values} files")
+    
+    one_folder = "YogaPoses//Downdog"
+    #print (len(os.listdir(one_folder)))
+    
+    check_dir_test = os.listdir(testing_folder)
+    for j in check_dir_test:
+        ins_file_dir = f"{testing_folder}//{j}"
+        #print(len(os.listdir(ins_file_dir)))
+        if (len(os.listdir(ins_file_dir))) < len(os.listdir(one_folder)) - train_values :
+            split_data(train_values,training_folder,testing_folder)
+            print ("it run the function")
+        else :
+            print (f"{ins_file_dir} has {(len(os.listdir(ins_file_dir)))}/{len(os.listdir(one_folder)) - train_values} files")
+
+
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------#-------------
+    
+
+ 
+
+
+
+    
+
+
 
 
 
